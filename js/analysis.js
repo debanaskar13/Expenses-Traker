@@ -1,17 +1,76 @@
 let user_id = localStorage.getItem('userId');
 
-let category = ['bills', 'grocery', "house", "rent", "medical"];
+let expenseCategories = [];
+let incomeCategories = [];
 
-let expenseCategory = [];
+let expenseValues = [];
+let myLabels = [];
+let backgroundColorList = [];
+
+document.querySelector('#user_dp').setAttribute("src", localStorage.getItem("picture"));
+document.querySelector('#user_name').textContent = localStorage.getItem("name");
+
+document.querySelector('#backbtn').addEventListener('click', function () {
+    window.location.href = 'dashboard.html'
+})
+//------------------------ Logout functionality---------------------------------------
+
+document.querySelector('#logout').addEventListener('click', function () {
+
+    firebase.auth().signOut().then(function () {
+        // Sign-out successful.
+        localStorage.removeItem("name");
+        localStorage.removeItem("picture");
+        localStorage.removeItem("userId");
+
+        window.location.href = "index.html";
+
+    }).catch(function (error) {
+        alert("Some error occured")
+    });
+});
+
+//********************&&&&&&&&&  Logout Complete  &&&&&&&&********************* */
 
 
-
-let ref = firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
+firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
     let data = snapshot.val();
-    console.log(data);
+
+    $('#bar_graph').html('');
+
+    let totalExpense = document.querySelector('#totalExpense');
+    let totalIncome = document.querySelector('#totalIncome');
+    let totalSavings = document.querySelector('#totalSavings');
+
+    let income = 0;
+    let expense = 0;
+
+    for (let id in data) {
+        let temp = data[id].category;
+        if (expenseCategories.includes(temp)) {
+            //pass
+        } else {
+            if (data[id].type !== 'credit') {
+                expenseCategories.push(temp);
+            } else {
+                incomeCategories.push(temp)
+            }
+        }
+
+        if (data[id].type === 'credit') {
+            income += Number(data[id].amount);
+        } else {
+            expense += Number(data[id].amount);
+        }
+
+    };
+    totalExpense.textContent = expense;
+    totalIncome.textContent = income;
+    savings = income - expense;
+    totalSavings.textContent = savings;
 
 
-    category.forEach(element => {
+    expenseCategories.forEach(element => {
         let amount = 0;
 
         for (let id in data) {
@@ -20,22 +79,92 @@ let ref = firebase.database().ref('users/' + user_id).on('value', function (snap
             }
         };
 
-        expenseCategory.push(amount);
+        expenseValues.push(amount);
 
+        backgroundColorList.push(getRandomColor())
 
-    })
-});
+    });
 
-let myChart = document.querySelector('#bar_graph').getContext('2d');
+    window.options = {
+        scales: {
+            xAxes: [{
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Category'
+                },
+                gridLines: {
+                    display: false,
+                }
+            }],
+            yAxes: [{
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Amount'
+                },
+                gridLines: {
+                    display: false,
+                }
+            }]
+        },
+        elements: {
+            arc: {
+                borderWidth: 0
+            }
+        },
+        responsive: true
+    };
 
-let expenseChart = new Chart(myChart, {
-    type: 'bar',
-    data: {
-        labels: category,
+    window.myData = {
+        labels: expenseCategories,
         datasets: [{
             label: 'Category wise expense',
-            data: expenseCategory,
-            backgroundColor: '#1418cb'
-        }]
+            data: expenseValues,
+            backgroundColor: backgroundColorList,
+            // borderColor: getRandomColor(),
+            // borderWidth: 1
+        }],
+    };
+
+    let ctx = document.querySelector('#bar_graph');
+    window.myChart = ctx.getContext('2d');
+    ctx.height = 90;
+    ctx.width = 200;
+
+    window.expenseChart = new Chart(myChart, {
+        type: document.querySelector('#graph_type').value,
+        data: myData,
+        options: options
+    });
+});
+
+function updateChartType() {
+    // Since you can't update chart type directly in Charts JS you must destroy original chart and rebuild
+    expenseChart.destroy();
+
+
+    expenseChart = new Chart(myChart, {
+        type: document.getElementById("graph_type").value,
+        data: myData,
+        options: options
+    });
+
+    if (document.getElementById("graph_type").value === 'line' || document.getElementById("graph_type").value === 'bar') {
+        expenseChart.options.scales.xAxes[0].scaleLabel.display = true;
+        expenseChart.options.scales.yAxes[0].scaleLabel.display = true;
+    } else {
+        expenseChart.options.scales.xAxes[0].scaleLabel.display = false;
+        expenseChart.options.scales.yAxes[0].scaleLabel.display = false;
+        expenseChart.options.scales.display = false;
+
     }
-})
+
+};
+
+function getRandomColor() {
+    let color = '#';
+    let letters = '0123456789ABCDEF';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color
+}

@@ -39,7 +39,7 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
                 <td>${counter}</td>
                 <td>${data[id].name}</td>
                 <td>${data[id].type}</td>
-                <td>Rs ${data[id].amount}</td>
+                <td><i class="fa fa-rupee" style="font-size:18px"> ${data[id].amount}</td>
                 <td>${data[id].category}</td>
                 <td>${data[id].time} , ${data[id].date}</td>
                 <td class="editOnHover" data-toggle="modal" data-target="#exampleModal"><i class="fa mt-3 fa-pencil-square-o"></i></td>
@@ -93,6 +93,10 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
 
 document.querySelector('#user_dp').setAttribute("src", localStorage.getItem("picture"));
 document.querySelector('#user_name').textContent = localStorage.getItem("name");
+
+document.querySelector('#graphical_view').addEventListener('click', function () {
+    window.location.href = 'analysis.html'
+})
 
 document.querySelector('#logout').addEventListener('click', function () {
 
