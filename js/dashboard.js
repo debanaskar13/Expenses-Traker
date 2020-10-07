@@ -21,6 +21,10 @@ document.querySelector('#open_add_expense_modal_btn').addEventListener('click', 
 firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
 
     let data = snapshot.val();
+    lengthOfData = data.length;
+    // console.log(data);
+    lengthCounter = 0;
+
 
     $('#expense_table').html('');
     // console.log(data)
@@ -34,6 +38,7 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
     let counter = 1;
     for (let id in data) {
         // console.log(data[id].amount)
+        lengthCounter++
         document.querySelector('#expense_table').innerHTML += `
         <tr data-id=${id} class = "table_row">
                 <td>${counter}</td>
@@ -42,8 +47,8 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
                 <td><i class="fa fa-rupee" style="font-size:18px"> ${data[id].amount}</td>
                 <td>${data[id].category}</td>
                 <td>${data[id].time} , ${data[id].date}</td>
-                <td class="editOnHover" data-toggle="modal" data-target="#exampleModal"><i class="fa mt-3 fa-pencil-square-o"></i></td>
-                <td class="editOnHover"><i onclick="CompleteMessageShown()" class="fa mt-3 fa-times"></i></td>
+                <td class="editOnHover" data-toggle="modal" data-target="#exampleModal"><i class="fa mt-3 fa-pencil-square-o" style="color:blue;"></i></td>
+                <td class="editOnHover" style="color:red;"><i onclick="CompleteMessageShown()" class="fa mt-3 fa-times"></i></td>
         </tr>`;
         counter++;
 
@@ -58,7 +63,40 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
     savings = income - expense;
     totalSavings.textContent = savings;
 
-    // update and delete operations
+    // --------------------------------- Page Number ---------------------------------
+
+    for (let i = 1; i <= Math.ceil(lengthCounter / 5); i++) {
+        let numberList = document.querySelector('#numberList');
+
+
+        if (i == 1) {
+            numberList.innerHTML += `<li id="f${i}" class="page-item "><a data-id = ${i} class="page-link">${i}</a></li>`
+            document.querySelector('#f1').classList.add('active')
+        } else {
+            numberList.innerHTML += `<li id="f${i}" class="page-item "><a data-id = ${i} class="page-link">${i}</a></li>`
+
+        }
+    };
+
+    let pageLink = document.getElementsByClassName('page-link');
+
+    for (let i = 0; i < pageLink.length; i++) {
+
+        pageLink[i].addEventListener('click', function (e) {
+            let pageId = this.getAttribute('data-id');
+
+            if (document.querySelector('.active') != null) {
+                document.querySelector('.active').classList.remove('active');
+            }
+
+            console.log(`#f${pageId}`);
+            document.querySelector(`#f${pageId}`).classList.add('active');
+
+        });
+
+
+    };
+    //---------------------------------- update and delete operations ----------------------
 
     let table_row = document.getElementsByClassName('table_row');
     for (let i = 0; i < table_row.length; i++) {
@@ -86,8 +124,10 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
                 });
             };
             // console.log(id);
-        })
-    }
+        });
+    };
+
+
 });
 
 
@@ -222,3 +262,4 @@ function updateTableData(name, type, amount, date, time, category) {
         alert('income more money to expense it')
     }
 };
+

@@ -90,7 +90,7 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
             xAxes: [{
                 scaleLabel: {
                     display: true,
-                    labelString: 'Category'
+                    labelString: 'Expense Category'
                 },
                 gridLines: {
                     display: false,
@@ -99,7 +99,7 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
             yAxes: [{
                 scaleLabel: {
                     display: true,
-                    labelString: 'Amount'
+                    labelString: 'Expense Amount'
                 },
                 gridLines: {
                     display: false,
