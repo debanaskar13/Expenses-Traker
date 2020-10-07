@@ -27,29 +27,35 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
 
 
     $('#expense_table').html('');
+    $('#numberList').html('');
     // console.log(data)
 
     let totalExpense = document.querySelector('#totalExpense');
     let totalIncome = document.querySelector('#totalIncome');
     let totalSavings = document.querySelector('#totalSavings');
 
+    let dataObject = {};
     let income = 0;
     let expense = 0;
     let counter = 1;
     for (let id in data) {
-        // console.log(data[id].amount)
+        // console.log(data)
+        dataObject[`${counter}`] = [id, data[id]];
         lengthCounter++
-        document.querySelector('#expense_table').innerHTML += `
-        <tr data-id=${id} class = "table_row">
-                <td>${counter}</td>
-                <td>${data[id].name}</td>
-                <td>${data[id].type}</td>
-                <td><i class="fa fa-rupee" style="font-size:18px"> ${data[id].amount}</td>
-                <td>${data[id].category}</td>
-                <td>${data[id].time} , ${data[id].date}</td>
-                <td class="editOnHover" data-toggle="modal" data-target="#exampleModal"><i class="fa mt-3 fa-pencil-square-o" style="color:blue;"></i></td>
-                <td class="editOnHover" style="color:red;"><i onclick="CompleteMessageShown()" class="fa mt-3 fa-times"></i></td>
-        </tr>`;
+        if (counter <= 5) {
+
+            document.querySelector('#expense_table').innerHTML += `
+            <tr data-id=${id} class = "table_row">
+            <td>${counter}</td>
+            <td>${data[id].name}</td>
+            <td>${data[id].type}</td>
+            <td><i class="fa fa-rupee" style="font-size:18px"> ${data[id].amount}</td>
+            <td>${data[id].category}</td>
+            <td>${data[id].time} , ${data[id].date}</td>
+            <td class="editOnHover" data-toggle="modal" data-target="#exampleModal"><i class="fa mt-3 fa-pencil-square-o" style="color:blue;"></i></td>
+            <td class="editOnHover" style="color:red;"><i onclick="CompleteMessageShown()" class="fa mt-3 fa-times"></i></td>
+            </tr>`;
+        }
         counter++;
 
         if (data[id].type === 'credit') {
@@ -62,21 +68,20 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
     totalIncome.textContent = income;
     savings = income - expense;
     totalSavings.textContent = savings;
-
     // --------------------------------- Page Number ---------------------------------
+    if (lengthCounter != 0) {
 
-    for (let i = 1; i <= Math.ceil(lengthCounter / 5); i++) {
-        let numberList = document.querySelector('#numberList');
+        for (let i = 1; i <= Math.ceil(lengthCounter / 5); i++) {
+            let numberList = document.querySelector('#numberList');
 
-
-        if (i == 1) {
-            numberList.innerHTML += `<li id="f${i}" class="page-item "><a data-id = ${i} class="page-link">${i}</a></li>`
-            document.querySelector('#f1').classList.add('active')
-        } else {
-            numberList.innerHTML += `<li id="f${i}" class="page-item "><a data-id = ${i} class="page-link">${i}</a></li>`
-
-        }
-    };
+            if (i == 1) {
+                numberList.innerHTML += `<li id="f${i}" class="page-item "><a data-id = ${i} class="page-link">${i}</a></li>`
+                document.querySelector('#f1').classList.add('active')
+            } else {
+                numberList.innerHTML += `<li id="f${i}" class="page-item "><a data-id = ${i} class="page-link">${i}</a></li>`
+            }
+        };
+    }
 
     let pageLink = document.getElementsByClassName('page-link');
 
@@ -85,12 +90,36 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
         pageLink[i].addEventListener('click', function (e) {
             let pageId = this.getAttribute('data-id');
 
+            $('#expense_table').html('');
+            for (let index = 5 * Number(pageId) - 4; index < 5 * Number(pageId) + 1; index++) {
+
+                // console.log(index);
+                if (index <= Object.keys(dataObject).length) {
+
+                    document.querySelector('#expense_table').innerHTML += `
+                    <tr data-id=${dataObject[index][0]} class = "table_row">
+                    <td>${index}</td>
+                    <td>${dataObject[index][1].name}</td>
+                    <td>${dataObject[index][1].type}</td>
+                    <td><i class="fa fa-rupee" style="font-size:18px"> ${dataObject[index][1].amount}</td>
+                    <td>${dataObject[index][1].category}</td>
+                    <td>${dataObject[index][1].time} , ${dataObject[index][1].date}</td>
+                    <td class="editOnHover" data-toggle="modal" data-target="#exampleModal"><i class="fa mt-3 fa-pencil-square-o" style="color:blue;"></i></td>
+                    <td class="editOnHover" style="color:red;"><i onclick="CompleteMessageShown()" class="fa mt-3 fa-times"></i></td>
+                    </tr>
+                    `;
+                }
+
+            }
+
+
             if (document.querySelector('.active') != null) {
                 document.querySelector('.active').classList.remove('active');
             }
 
-            console.log(`#f${pageId}`);
             document.querySelector(`#f${pageId}`).classList.add('active');
+            table_row = document.getElementsByClassName('table_row');
+            updateFunctionality(table_row, data);
 
         });
 
@@ -99,33 +128,8 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
     //---------------------------------- update and delete operations ----------------------
 
     let table_row = document.getElementsByClassName('table_row');
-    for (let i = 0; i < table_row.length; i++) {
+    updateFunctionality(table_row, data);
 
-        table_row[i].addEventListener('click', function (e) {
-            window.id = this.getAttribute('data-id');
-            if (e.target.classList.contains('fa-pencil-square-o')) {
-                document.querySelector('#add_expense').textContent = 'Update Expense';
-                document.querySelector('#exampleModalLabel').textContent = 'Update Expense';
-                document.querySelector('#expense_name').value = data[id].name;
-                document.querySelector('#expense_type').value = data[id].type;
-                document.querySelector('#expense_amount').value = data[id].amount;
-                document.querySelector('#expense_date').value = data[id].date;
-                document.querySelector('#expense_time').value = data[id].time;
-                document.querySelector('#expense_category').value = data[id].category;
-
-            } else if (e.target.classList.contains('fa-times')) {
-                firebase.database().ref('users/' + user_id).child(id).remove();
-                let message = document.querySelector('#message');
-                message.style.display = 'block'
-
-                message.innerHTML = `<p id="message_alert" class="text-md-center" style= "padding : 10px; background-color : green; color : white"> Expense Deleted Successfully <i id="close_icon" class="fas fa-times float-md-right" style="font-size:20px;cursor:pointer;"></i></p>`
-                document.querySelector('#close_icon').addEventListener('click', function () {
-                    message.style.display = 'none'
-                });
-            };
-            // console.log(id);
-        });
-    };
 
 
 });
@@ -239,6 +243,37 @@ function insertTableData(name, type, amount, date, time, category) {
         alert('income more money to expense it')
     }
 };
+
+function updateFunctionality(table_row, data) {
+    for (let i = 0; i < table_row.length; i++) {
+
+        table_row[i].addEventListener('click', function (e) {
+            window.id = this.getAttribute('data-id');
+            if (e.target.classList.contains('fa-pencil-square-o')) {
+                document.querySelector('#add_expense').textContent = 'Update Expense';
+                document.querySelector('#exampleModalLabel').textContent = 'Update Expense';
+                document.querySelector('#expense_name').value = data[id].name;
+                document.querySelector('#expense_type').value = data[id].type;
+                document.querySelector('#expense_amount').value = data[id].amount;
+                document.querySelector('#expense_date').value = data[id].date;
+                document.querySelector('#expense_time').value = data[id].time;
+                document.querySelector('#expense_category').value = data[id].category;
+
+            } else if (e.target.classList.contains('fa-times')) {
+                firebase.database().ref('users/' + user_id).child(id).remove();
+                let message = document.querySelector('#message');
+                message.style.display = 'block'
+
+                message.innerHTML = `<p id="message_alert" class="text-md-center" style= "padding : 10px; background-color : green; color : white"> Expense Deleted Successfully <i id="close_icon" class="fas fa-times float-md-right" style="font-size:20px;cursor:pointer;"></i></p>`
+                document.querySelector('#close_icon').addEventListener('click', function () {
+                    message.style.display = 'none'
+                });
+            };
+            // console.log(id);
+        });
+    };
+};
+
 function updateTableData(name, type, amount, date, time, category) {
 
     if ((type === "debit" && amount < savings) || (type === "credit")) {
