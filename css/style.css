@@ -116,3 +116,17 @@
     border-top-right-radius: 50%;
     border-bottom-right-radius: 50%;
 }
+
+#filterByMonth{
+    background-color:#DC3545;
+    border-radius: 30px;
+    color: #fff;
+    font-size: 1.5rem ;
+}
+
+#filterByYear{
+    background-color:#DC3545;
+    color: #fff;
+    border-radius: 30px;
+    font-size: 1.5rem ;
+}

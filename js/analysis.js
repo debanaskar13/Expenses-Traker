@@ -81,7 +81,11 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
 
         expenseValues.push(amount);
 
-        backgroundColorList.push(getRandomColor())
+        if (backgroundColorList.includes(getRandomColor())) {
+            //pass
+        } else {
+            backgroundColorList.push(getRandomColor())
+        }
 
     });
 
@@ -142,20 +146,21 @@ function updateChartType() {
     expenseChart.destroy();
 
 
-    expenseChart = new Chart(myChart, {
-        type: document.getElementById("graph_type").value,
-        data: myData,
-        options: options
-    });
+
 
     if (document.getElementById("graph_type").value === 'line' || document.getElementById("graph_type").value === 'bar') {
+        expenseChart = new Chart(myChart, {
+            type: document.getElementById("graph_type").value,
+            data: myData,
+            options: options
+        });
         expenseChart.options.scales.xAxes[0].scaleLabel.display = true;
         expenseChart.options.scales.yAxes[0].scaleLabel.display = true;
     } else {
-        expenseChart.options.scales.xAxes[0].scaleLabel.display = false;
-        expenseChart.options.scales.yAxes[0].scaleLabel.display = false;
-        expenseChart.options.scales.display = false;
-
+        expenseChart = new Chart(myChart, {
+            type: document.getElementById("graph_type").value,
+            data: myData,
+        });
     }
 
 };
