@@ -23,7 +23,12 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
 
     let data = snapshot.val();
     window.myData = data;
-    lengthOfData = data.length;
+    if (data != null) {
+
+        lengthOfData = data.length;
+    } else {
+        lengthOfData = 0;
+    }
     // console.log(data);
     window.lengthCounter = 0;
     let totalYearList = [];
@@ -261,9 +266,9 @@ function showTableOnPageChange(dataObject, pageId) {
 
     if (document.querySelector('.active') != null) {
         document.querySelector('.active').classList.remove('active');
+        document.querySelector(`#f${pageId}`).classList.add('active');
     }
 
-    document.querySelector(`#f${pageId}`).classList.add('active');
     table_row = document.getElementsByClassName('table_row');
 };
 
