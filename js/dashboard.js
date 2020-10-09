@@ -49,7 +49,8 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
             <td>${data[id].type}</td>
             <td><i class="fa fa-rupee" style="font-size:18px"> ${data[id].amount}</td>
             <td>${data[id].category}</td>
-            <td>${data[id].time} , ${data[id].date}</td>
+            <td>${data[id].time}</td>
+            <td>${data[id].date}</td>
             <td class="editOnHover" data-toggle="modal" data-target="#exampleModal"><i class="fa mt-3 fa-pencil-square-o" style="color:blue;"></i></td>
             <td class="editOnHover" style="color:red;"><i onclick="CompleteMessageShown()" class="fa mt-3 fa-times"></i></td>
             </tr>`;
@@ -247,7 +248,8 @@ function showTableOnPageChange(dataObject, pageId) {
                     <td>${dataObject[index][1].type}</td>
                     <td><i class="fa fa-rupee" style="font-size:18px"> ${dataObject[index][1].amount}</td>
                     <td>${dataObject[index][1].category}</td>
-                    <td>${dataObject[index][1].time} , ${dataObject[index][1].date}</td>
+                    <td>${dataObject[index][1].time}</td>
+                    <td>${dataObject[index][1].date}</td>
                     <td class="editOnHover" data-toggle="modal" data-target="#exampleModal"><i class="fa mt-3 fa-pencil-square-o" style="color:blue;"></i></td>
                     <td class="editOnHover" style="color:red;"><i onclick="CompleteMessageShown()" class="fa mt-3 ml-2 fa-times"></i></td>
                     </tr>

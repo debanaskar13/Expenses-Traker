@@ -167,3 +167,6 @@ table.blueTable thead th {
 table.blueTable thead th:first-child {
     border-left: none;
 }
+h3{
+    font-size: 1.5rem;
+}

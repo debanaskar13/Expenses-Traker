@@ -1,11 +1,11 @@
 let user_id = localStorage.getItem('userId');
 
-let expenseCategories = [];
-let incomeCategories = [];
+window.expenseCategories = [];
+window.incomeCategories = [];
 
-let expenseValues = [];
+window.expenseValues = [];
 let myLabels = [];
-let backgroundColorList = [];
+window.backgroundColorList = [];
 
 document.querySelector('#user_dp').setAttribute("src", localStorage.getItem("picture"));
 document.querySelector('#user_name').textContent = localStorage.getItem("name");
@@ -37,45 +37,147 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
     let data = snapshot.val();
 
     $('#bar_graph').html('');
+    let totalYearList = [];
 
+
+    window.dataObject = {};
+    let counter = 1;
+
+
+    for (let id in data) {
+        dataObject[`${counter}`] = [id, data[id]];
+
+        // if (data[id].date.split('-')[1] === month && data[id].date.split('-')[0] === year) {
+
+        //     let temp = data[id].category;
+        //     if (expenseCategories.includes(temp)) {
+        //         //pass
+        //     } else {
+        //         if (data[id].type !== 'credit') {
+        //             expenseCategories.push(temp);
+        //         } else {
+        //             incomeCategories.push(temp)
+        //         }
+        //     }
+        // }
+
+        if (totalYearList.includes(data[id].date.split('-')[0])) {
+            //pass
+        } else {
+            totalYearList.push(data[id].date.split('-')[0])
+        }
+        counter++;
+    };
+
+
+    let select = document.getElementById('filterByYear');
+
+    for (var i = 0; i < totalYearList.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = totalYearList[i];
+        opt.innerHTML = totalYearList[i];
+        select.appendChild(opt);
+    }
+
+    const date = new Date();
+    document.querySelector('#filterByYear').value = date.getFullYear();
+    let currentMonth = Number(date.getMonth()) + 1;
+    if (currentMonth < 10) {
+        currentMonth = currentMonth.toString()
+        document.querySelector('#filterByMonth').value = '0' + currentMonth;
+    } else {
+        document.querySelector('#filterByMonth').value = currentMonth;
+    }
+    filterByMonthYear();
+
+
+    window.expenseChart = new Chart(myChart, {
+        type: document.querySelector('#graph_type').value,
+        data: myData,
+        options: options
+    });
+
+});
+
+function updateChartType() {
+    // Since you can't update chart type directly in Charts JS you must destroy original chart and rebuild
+    expenseChart.destroy();
+
+
+
+
+    if (document.getElementById("graph_type").value === 'line' || document.getElementById("graph_type").value === 'bar') {
+        expenseChart = new Chart(myChart, {
+            type: document.getElementById("graph_type").value,
+            data: myData,
+            options: options
+        });
+        expenseChart.options.scales.xAxes[0].scaleLabel.display = true;
+        expenseChart.options.scales.yAxes[0].scaleLabel.display = true;
+    } else {
+        expenseChart = new Chart(myChart, {
+            type: document.getElementById("graph_type").value,
+            data: myData,
+        });
+    }
+
+};
+
+function getRandomColor() {
+    let color = '#';
+    let letters = '0123456789ABCDEF';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color
+}
+
+
+function filterByMonthYear() {
+    expenseCategories = [];
+    incomeCategories = [];
+    expenseValues = [];
+
+    let month = document.querySelector('#filterByMonth').value;
+    let year = document.querySelector('#filterByYear').value;
     let totalExpense = document.querySelector('#totalExpense');
     let totalIncome = document.querySelector('#totalIncome');
     let totalSavings = document.querySelector('#totalSavings');
-
+    let newCounter = 1;
+    let newDataObject = {};
     let income = 0;
     let expense = 0;
+    for (let key in dataObject) {
 
-    for (let id in data) {
-        let temp = data[id].category;
-        if (expenseCategories.includes(temp)) {
+        if (dataObject[key][1].date.split('-')[1] === month && dataObject[key][1].date.split('-')[0] === year) {
             //pass
-        } else {
-            if (data[id].type !== 'credit') {
-                expenseCategories.push(temp);
+            newDataObject[`${newCounter}`] = [dataObject[key][0], dataObject[key][1]];
+            newCounter++;
+
+            if (dataObject[key][1].type === 'credit') {
+                income += Number(dataObject[key][1].amount);
             } else {
-                incomeCategories.push(temp)
+                expense += Number(dataObject[key][1].amount);
+            }
+
+            let temp = dataObject[key][1].category;
+            if (expenseCategories.includes(temp)) {
+                //pass
+            } else {
+                if (dataObject[key][1].type !== 'credit') {
+                    expenseCategories.push(temp);
+                } else {
+                    incomeCategories.push(temp)
+                }
             }
         }
-
-        if (data[id].type === 'credit') {
-            income += Number(data[id].amount);
-        } else {
-            expense += Number(data[id].amount);
-        }
-
     };
-    totalExpense.textContent = expense;
-    totalIncome.textContent = income;
-    savings = income - expense;
-    totalSavings.textContent = savings;
-
-
     expenseCategories.forEach(element => {
         let amount = 0;
 
-        for (let id in data) {
-            if (data[id].category === element) {
-                amount += Number(data[id].amount);
+        for (let id in dataObject) {
+            if (dataObject[id][1].category === element) {
+                amount += Number(dataObject[id][1].amount);
             }
         };
 
@@ -88,6 +190,11 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
         }
 
     });
+
+    totalExpense.textContent = expense;
+    totalIncome.textContent = income;
+    savings = income - expense;
+    totalSavings.textContent = savings;
 
     window.options = {
         scales: {
@@ -124,8 +231,7 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
             label: 'Category wise expense',
             data: expenseValues,
             backgroundColor: backgroundColorList,
-            // borderColor: getRandomColor(),
-            // borderWidth: 1
+
         }],
     };
 
@@ -134,42 +240,5 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
     ctx.height = 90;
     ctx.width = 200;
 
-    window.expenseChart = new Chart(myChart, {
-        type: document.querySelector('#graph_type').value,
-        data: myData,
-        options: options
-    });
-});
-
-function updateChartType() {
-    // Since you can't update chart type directly in Charts JS you must destroy original chart and rebuild
-    expenseChart.destroy();
-
-
-
-
-    if (document.getElementById("graph_type").value === 'line' || document.getElementById("graph_type").value === 'bar') {
-        expenseChart = new Chart(myChart, {
-            type: document.getElementById("graph_type").value,
-            data: myData,
-            options: options
-        });
-        expenseChart.options.scales.xAxes[0].scaleLabel.display = true;
-        expenseChart.options.scales.yAxes[0].scaleLabel.display = true;
-    } else {
-        expenseChart = new Chart(myChart, {
-            type: document.getElementById("graph_type").value,
-            data: myData,
-        });
-    }
 
 };
-
-function getRandomColor() {
-    let color = '#';
-    let letters = '0123456789ABCDEF';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color
-}
