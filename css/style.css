@@ -1,3 +1,7 @@
+*{
+    font-family: "Lucida Console", Monaco, monospace;
+}
+
 .bg-theme{
     background: #41295a;  /* fallback for old browsers */
     background: -webkit-linear-gradient(to right, #2F0743, #41295a);  /* Chrome 10-25, Safari 5.1-6 */
@@ -17,10 +21,6 @@
 
 }
 
-.editOnHover:hover{
-    font-size: 26px;
-    transition: all 0.5s ease;
-}
 
 .fa{
     cursor: pointer;
@@ -129,4 +129,41 @@
     color: #fff;
     border-radius: 30px;
     font-size: 1.5rem ;
+}
+
+/* -------------------------------------------------------- */
+
+table.blueTable {
+    font-family: "Lucida Console", Monaco, monospace;
+    border:none;
+    background-color: #EEEEEE;
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+}
+table.blueTable td, table.blueTable th {
+    border: none;
+    padding: 10px 4px;
+}
+table.blueTable tbody td {
+    font-size: 18px;
+}
+table.blueTable tr:nth-child(even) {
+    background: #D0E4F5;
+}
+table.blueTable thead {
+    background: #A44599;
+    background: -moz-linear-gradient(top, #bb73b2 0%, #ad57a3 66%, #A44599 100%);
+    background: -webkit-linear-gradient(top, #bb73b2 0%, #ad57a3 66%, #A44599 100%);
+    background: linear-gradient(to bottom, #bb73b2 0%, #ad57a3 66%, #A44599 100%);
+    border-bottom: 2px solid #444444;
+}
+table.blueTable thead th {
+    font-size: 14px;
+    font-weight: bold;
+    color: #FFFFFF;
+    border-left: 2px solid #D0E4F5;
+}
+table.blueTable thead th:first-child {
+    border-left: none;
 }

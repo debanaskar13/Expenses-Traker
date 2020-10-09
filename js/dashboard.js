@@ -22,6 +22,7 @@ document.querySelector('#open_add_expense_modal_btn').addEventListener('click', 
 firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
 
     let data = snapshot.val();
+    window.myData = data;
     lengthOfData = data.length;
     // console.log(data);
     window.lengthCounter = 0;
@@ -31,13 +32,10 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
     $('#numberList').html('');
     // console.log(data)
 
-    let totalExpense = document.querySelector('#totalExpense');
-    let totalIncome = document.querySelector('#totalIncome');
-    let totalSavings = document.querySelector('#totalSavings');
+
 
     window.dataObject = {};
-    let income = 0;
-    let expense = 0;
+
     let counter = 1;
     for (let id in data) {
         dataObject[`${counter}`] = [id, data[id]];
@@ -57,12 +55,6 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
             </tr>`;
         }
         counter++;
-
-        if (data[id].type === 'credit') {
-            income += Number(data[id].amount);
-        } else {
-            expense += Number(data[id].amount);
-        }
 
         if (totalYearList.includes(data[id].date.split('-')[0])) {
             //pass
@@ -90,10 +82,6 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
         document.querySelector('#filterByMonth').value = currentMonth;
     }
 
-    totalExpense.textContent = expense;
-    totalIncome.textContent = income;
-    savings = income - expense;
-    totalSavings.textContent = savings;
     // --------------------------------- Page Number ---------------------------------
     if (lengthCounter != 0) {
 
@@ -120,6 +108,7 @@ firebase.database().ref('users/' + user_id).on('value', function (snapshot) {
             let pageId = this.getAttribute('data-id');
             showTableOnPageChange(dataObject, pageId);
             filterByMonthYear();
+
         });
         updateFunctionality(table_row, data);
 
@@ -260,7 +249,7 @@ function showTableOnPageChange(dataObject, pageId) {
                     <td>${dataObject[index][1].category}</td>
                     <td>${dataObject[index][1].time} , ${dataObject[index][1].date}</td>
                     <td class="editOnHover" data-toggle="modal" data-target="#exampleModal"><i class="fa mt-3 fa-pencil-square-o" style="color:blue;"></i></td>
-                    <td class="editOnHover" style="color:red;"><i onclick="CompleteMessageShown()" class="fa mt-3 fa-times"></i></td>
+                    <td class="editOnHover" style="color:red;"><i onclick="CompleteMessageShown()" class="fa mt-3 ml-2 fa-times"></i></td>
                     </tr>
                     `;
         }
@@ -336,16 +325,31 @@ function filterByMonthYear() {
 
     let month = document.querySelector('#filterByMonth').value;
     let year = document.querySelector('#filterByYear').value;
+    let totalExpense = document.querySelector('#totalExpense');
+    let totalIncome = document.querySelector('#totalIncome');
+    let totalSavings = document.querySelector('#totalSavings');
     let newCounter = 1;
     let newDataObject = {};
+    let income = 0;
+    let expense = 0;
     for (let key in dataObject) {
 
         if (dataObject[key][1].date.split('-')[1] === month && dataObject[key][1].date.split('-')[0] === year) {
             //pass
             newDataObject[`${newCounter}`] = [dataObject[key][0], dataObject[key][1]];
             newCounter++;
+
+            if (dataObject[key][1].type === 'credit') {
+                income += Number(dataObject[key][1].amount);
+            } else {
+                expense += Number(dataObject[key][1].amount);
+            }
         }
     };
+    totalExpense.textContent = expense;
+    totalIncome.textContent = income;
+    savings = income - expense;
+    totalSavings.textContent = savings;
 
     // if (document.querySelectorAll('.page-item').length <= Math.ceil(newCounter / 5)) {
     //     console.log('small or equal to');
@@ -358,6 +362,8 @@ function filterByMonthYear() {
     // }
     // console.log(document.querySelectorAll('.page-item')[3]);
 
-    let pageId = $("li.active a[data-id]").attr('data-id')
+    let pageId = $("li.active a[data-id]").attr('data-id');
+    let table_row = document.getElementsByClassName('table_row');
     showTableOnPageChange(newDataObject, pageId);
+    updateFunctionality(table_row, myData);
 };
